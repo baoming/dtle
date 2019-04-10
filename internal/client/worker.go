@@ -343,6 +343,8 @@ func (r *Worker) run() {
 				r.logger.Debugf("setState 4")
 				r.setState("", r.waitErrorToEvent(waitRes))
 				if !waitRes.Successful() {
+					r.alloc.DesiredDescription = fmt.Sprintf("%v", waitRes)
+					r.alloc.Job.StatusDescription = fmt.Sprintf("%v", waitRes)
 					r.logger.Errorf("agent: Task %q for alloc %q failed: %v", r.task.Type, r.alloc.ID, waitRes)
 				} else {
 					r.logger.Printf("agent: Task %q for alloc %q completed successfully", r.task.Type, r.alloc.ID)
