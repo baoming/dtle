@@ -1142,6 +1142,7 @@ func (s *StateStore) UpsertAlloc(index uint64, alloc *models.Allocation) error {
 
 		// The job has been denormalized so re-attach the original job
 		if alloc.Job == nil {
+			exist.Job.StatusDescription = alloc.ClientDescription
 			alloc.Job = exist.Job
 		}
 	}
@@ -1448,6 +1449,10 @@ func (s *StateStore) setJobStatus(index uint64, txn *memdb.Txn,
 			return err
 		}
 	}
+	allocs, err := txn.Get("allocs", "job", job.ID)
+	if err != nil {
+		return err
+	}
 
 	// Fast-path if nothing has changed.
 	if oldStatus == newStatus {
@@ -1458,6 +1463,13 @@ func (s *StateStore) setJobStatus(index uint64, txn *memdb.Txn,
 	updated := job.Copy()
 	updated.Status = newStatus
 	updated.ModifyIndex = index
+
+	for alloc := allocs.Next(); alloc != nil; alloc = allocs.Next() {
+		if alloc.(*models.Allocation).ClientDescription != "" {
+			updated.StatusDescription = "deas" //alloc.(*models.Allocation).ClientDescription
+			break
+		}
+	}
 
 	// Insert the job
 	if err := txn.Insert("jobs", updated); err != nil {
@@ -1475,7 +1487,6 @@ func (s *StateStore) getJobStatus(txn *memdb.Txn, job *models.Job, evalDelete bo
 	if err != nil {
 		return "", err
 	}
-
 	// If there is a non-terminal allocation, the job is running.
 	hasAlloc := false
 	for alloc := allocs.Next(); alloc != nil; alloc = allocs.Next() {
