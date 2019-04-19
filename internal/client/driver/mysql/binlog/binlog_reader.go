@@ -336,6 +336,11 @@ func (b *BinlogReader) handleEvent(ev *replication.BinlogEvent, entriesChannel c
 		evt := ev.Event.(*replication.QueryEvent)
 		query := string(evt.Query)
 
+		if evt.ErrorCode != 0 {
+			b.logger.Errorf("DTLE_BUG: found query_event with error code, which is not handled. ec: %v, query: %v",
+				evt.ErrorCode, query)
+		}
+
 		b.logger.Debugf("mysql.reader: query event: schema: %s, query: %s", evt.Schema, query)
 
 		if strings.ToUpper(query) == "BEGIN" {
@@ -1368,7 +1373,7 @@ func (b *BinlogReader) matchDB(patternDBS []*config.DataSource, a string) bool {
 
 func (b *BinlogReader) matchTable(patternTBS []*config.DataSource, schemaName string, tableName string) bool {
 	for _, pdb := range patternTBS {
-		if len(pdb.Tables) == 0 && schemaName == pdb.TableSchema {
+		if pdb.TableSchemaScope == "schema" && schemaName == pdb.TableSchema {
 			return true
 		}
 		redb, okdb := b.ReMap[pdb.TableSchema]
