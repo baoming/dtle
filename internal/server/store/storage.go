@@ -1465,8 +1465,8 @@ func (s *StateStore) setJobStatus(index uint64, txn *memdb.Txn,
 	updated.ModifyIndex = index
 
 	for alloc := allocs.Next(); alloc != nil; alloc = allocs.Next() {
-		if alloc.(*models.Allocation).ClientDescription != "" {
-			updated.StatusDescription = "deas" //alloc.(*models.Allocation).ClientDescription
+		if alloc.(*models.Allocation).DesiredDescription != "" {
+			updated.StatusDescription = alloc.(*models.Allocation).DesiredDescription //alloc.(*models.Allocation).ClientDescription
 			break
 		}
 	}

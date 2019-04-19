@@ -213,7 +213,6 @@ func (r *Worker) setState(state string, event *models.TaskEvent) {
 
 	// Indicate the task has been updated.
 	r.logger.Debugf("updater")
-
 	r.updater(r.task.Type, state, event)
 }
 

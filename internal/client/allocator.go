@@ -271,7 +271,7 @@ func (r *Allocator) setTaskState(taskName, state string, event *models.TaskEvent
 		}
 		if event.Type == models.TaskTerminated && event.Message != "" {
 			r.alloc.DesiredDescription = event.Message
-			r.allocClientDescription = event.Message
+			//r.allocClientDescription = event.Message
 		}
 	}
 
